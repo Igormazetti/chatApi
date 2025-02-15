@@ -1,97 +1,179 @@
 # Chat API
 
-Este projeto é uma API de chat construída com Node.js, Express, TypeScript, e PostgreSQL. Ele utiliza `Socket.IO` para comunicação em tempo real e `knex.js` para gerenciar migrações do banco de dados.
+A real-time chat API built with Node.js, Express, TypeScript, and PostgreSQL. The project uses Socket.IO for real-time communication and Knex.js for database migrations and queries.
 
-## Estrutura do Projeto
+## Features
 
-- **src/**: Contém o código-fonte da aplicação.
-  - **controllers/**: Controladores que lidam com as requisições HTTP.
-  - **models/**: Modelos que interagem com o banco de dados.
-  - **routes/**: Define as rotas da API.
-  - **services/**: Contém a lógica de negócios.
-  - **types/**: Define tipos TypeScript usados na aplicação.
-- **migrations/**: Scripts de migração para criar tabelas no banco de dados.
-- **.env**: Arquivo de configuração de variáveis de ambiente.
-- **docker-compose.yml**: Configuração do Docker para o banco de dados PostgreSQL.
-- **knexfile.js**: Configuração do `knex` para migrações.
-- **package.json**: Lista de dependências e scripts do projeto.
-- **tsconfig.json**: Configuração do TypeScript.
+- Real-time messaging
+- Room-based chat system
+- Message editing and deletion
+- Reply to messages
+- User authentication
+- Room member management
 
-## Pré-requisitos
+## Tech Stack
 
-- [Node.js](https://nodejs.org/) (versão 14 ou superior)
-- [Docker](https://www.docker.com/)
-- [Docker Compose](https://docs.docker.com/compose/)
+- **Backend**: Node.js with Express
+- **Language**: TypeScript
+- **Database**: PostgreSQL
+- **ORM**: Knex.js
+- **Real-time**: Socket.IO
+- **Testing**: Jest
+- **Container**: Docker
 
-## Configuração
+## Project Structure
 
-1. **Clone o repositório:**
+```
+chat-api/
+├── src/
+│   ├── @types/          # TypeScript type definitions
+│   ├── controllers/     # Request handlers
+│   ├── models/          # Database models
+│   ├── routes/          # API routes
+│   ├── services/        # Business logic
+│   ├── middleware/      # Express middleware
+│   └── server.ts        # Application entry point
+├── migrations/          # Database migrations
+├── __tests__/          # Test files
+├── docker/             # Docker configuration
+└── config/             # Configuration files
+```
 
+## Prerequisites
+
+- Node.js (v18 or higher)
+- Docker and Docker Compose
+- npm or yarn
+- PostgreSQL (if running without Docker)
+
+## Getting Started
+
+1. **Clone the repository**
    ```bash
-   git clone <URL_DO_REPOSITORIO>
+   git clone <repository-url>
    cd chat-api
    ```
 
-2. **Instale as dependências:**
-
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-3. **Configure o arquivo `.env`:**
-
-   Crie um arquivo `.env` na raiz do projeto com o seguinte conteúdo:
-
-   ```plaintext
+3. **Set up environment variables**
+   
+   Create a `.env` file in the root directory:
+   ```env
    POSTGRES_USER=chatuser
    POSTGRES_PASSWORD=chatpassword
    POSTGRES_DB=chatdb
    POSTGRES_HOST=localhost
    POSTGRES_PORT=5432
+   JWT_SECRET=your-secret-key
    ```
 
-4. **Suba o banco de dados com Docker:**
+4. **Database Setup**
 
-   Certifique-se de que o Docker está rodando e execute:
-
+   **Using Docker:**
    ```bash
+   # Start PostgreSQL container
    docker-compose up -d
    ```
 
-5. **Execute as migrações do banco de dados:**
+   **Manual PostgreSQL setup:**
+   - Install PostgreSQL
+   - Create a database named 'chatdb'
+   - Update `.env` with your database credentials
 
+5. **Run migrations**
    ```bash
    npm run migrate
    ```
 
-6. **Inicie o servidor:**
-
-   Para iniciar o servidor em modo de desenvolvimento com `nodemon`:
-
+6. **Start the server**
+   
+   Development mode:
    ```bash
    npm run dev
    ```
 
-   Ou para iniciar o servidor em modo de produção:
-
+   Production mode:
    ```bash
-   npm run start
+   npm run build
+   npm start
    ```
 
-## Uso
+## Database Migrations
 
-- A API estará disponível em `http://localhost:3000`.
-- Use ferramentas como Postman para testar os endpoints REST.
-- A comunicação em tempo real pode ser testada com um cliente Socket.IO.
+The project uses Knex.js for database migrations. Migration files are in the `migrations/` directory.
 
-## Scripts Disponíveis
+### Available Migrations
 
-- `npm run dev`: Inicia o servidor em modo de desenvolvimento.
-- `npm run start`: Inicia o servidor em modo de produção.
-- `npm run migrate`: Executa as migrações do banco de dados.
-- `npm run rollback`: Reverte a última migração.
+1. **Create Users Table**
+   - Basic user information
+   - Authentication details
 
-## Contribuição
+2. **Create Messages Table**
+   - Message content
+   - Sender and receiver information
+   - Reply functionality
+   - Timestamps
 
-Sinta-se à vontade para abrir issues e pull requests para melhorias e correções.
+3. **Create Rooms and Relationships**
+   - Chat rooms
+   - Room membership
+   - Room-message relationships
+
+### Migration Commands
+
+```bash
+# Run all pending migrations
+npm run migrate
+
+# Rollback last migration
+npm run rollback
+
+# Create a new migration
+npm run migrate:make migration_name
+```
+
+## Testing
+
+The project uses Jest for testing. Tests are located in the `__tests__` directory.
+
+### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run tests in watch mode
+npm run test:watch
+```
+
+### Test Structure
+
+- `__tests__/controllers/`: Controller tests
+- `__tests__/services/`: Service layer tests
+
+## API Endpoints
+
+### Authentication
+- `POST /auth/register`: Register new user
+- `POST /auth/login`: User login
+
+### Rooms
+- `POST /rooms/create`: Create new chat room
+- `POST /rooms/:roomId/members`: Add member to room
+- `DELETE /rooms/:roomId/members/:userId`: Remove member from room
+- `GET /rooms/:roomId/members`: Get room members
+
+### Messages
+- `POST /messages`: Send message
+- `PUT /messages/:id`: Edit message
+- `DELETE /messages/:id`: Delete message
+- `POST /messages/:id/reply`: Reply to message
+- `GET /rooms/:roomId/messages`: Get room messages
 
