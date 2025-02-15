@@ -5,10 +5,15 @@ export class ChatController {
   constructor(private chatService: ChatService) {}
 
   async sendMessage(req: Request, res: Response): Promise<void> {
-    const { receiverId, text, replyTo, roomId } = req.body;
-    const senderId = req.body.token;
+    const { text, receiverId, roomId, token } = req.body;
+    
+    const response = await this.chatService.sendMessage({
+      senderId: Number(token),
+      receiverId: Number(receiverId),
+      text,
+      roomId: Number(roomId)
+    });
 
-    const response = await this.chatService.sendMessage({senderId: parseInt(senderId), receiverId, text, replyTo, roomId});
     if (response.error) {
       res.status(response.status).json({ error: response.error });
     } else {
@@ -18,9 +23,14 @@ export class ChatController {
 
   async editMessage(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
-    const { text, token, roomId } = req.body;
-    const userId = token;
-    const response = await this.chatService.editMessage({id: parseInt(id), userId, text});
+    const { text, token } = req.body;
+
+    const response = await this.chatService.editMessage({
+      id: Number(id),
+      userId: Number(token),
+      text
+    });
+
     if (response.error) {
       res.status(response.status).json({ error: response.error });
     } else {
@@ -30,10 +40,13 @@ export class ChatController {
 
   async deleteMessage(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
-    const { token, roomId } = req.body;
-    const userId = token;
+    const { token } = req.body;
 
-    const response = await this.chatService.deleteMessage({id: parseInt(id), userId: parseInt(userId)});
+    const response = await this.chatService.deleteMessage({
+      id: Number(id),
+      userId: Number(token)
+    });
+
     if (response.error) {
       res.status(response.status).json({ error: response.error });
     } else {
@@ -43,10 +56,14 @@ export class ChatController {
 
   async replyToMessage(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
-    const { text, token, roomId } = req.body;
-    const senderId = token;
+    const { text, token } = req.body;
 
-    const response = await this.chatService.replyToMessage({id: parseInt(id), senderId: parseInt(senderId), text});
+    const response = await this.chatService.replyToMessage({
+      id: Number(id),
+      senderId: Number(token),
+      text
+    });
+
     if (response.error) {
       res.status(response.status).json({ error: response.error });
     } else {
