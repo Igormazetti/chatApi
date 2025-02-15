@@ -11,7 +11,7 @@ export class ChatController {
     
     const response = await this.chatService.sendMessage({
       senderId: Number(token),
-      receiverId: Number(receiverId),
+      receiverId: receiverId ? Number(receiverId) : undefined,
       text,
       roomId: Number(roomId)
     });
