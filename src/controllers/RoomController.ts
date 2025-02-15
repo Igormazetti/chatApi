@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import { RoomService } from '../services/RoomService';
+import { getIO } from '../config/socketIo';
+import { SocketEvents } from '../constants/socketEvents';
 
 export class RoomController {
   constructor(private roomService: RoomService) {}
@@ -14,6 +16,7 @@ export class RoomController {
     }
 
     const result = await this.roomService.createRoom(name, userId);
+   
     res.status(result.status).json(result.data || { error: result.error });
   }
 
@@ -23,6 +26,14 @@ export class RoomController {
 
     const result = await this.roomService.addMember(Number(roomId), userId);
 
+    if (!result.error) {
+      getIO().to(String(roomId)).emit(SocketEvents.ROOM.MEMBER_ADDED, {
+        roomId: Number(roomId),
+        userId,
+        timestamp: new Date()
+      });
+    }
+
     res.status(result.status).json(result.data || { error: result.error });
   }
 
@@ -30,6 +41,10 @@ export class RoomController {
     const { roomId, userId } = req.params;
 
     const result = await this.roomService.removeMember(Number(roomId), Number(userId));
+
+    if (!result.error) {
+      getIO().to(roomId).emit('memberRemoved', result.data);
+    }
   
     res.status(result.status).json(result.data || { error: result.error });
   }

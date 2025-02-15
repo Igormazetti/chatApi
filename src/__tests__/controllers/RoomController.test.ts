@@ -1,6 +1,12 @@
 import { Request, Response } from 'express';
-import { RoomController } from '../../controllers/RoomController';
+import { mockIo } from '../mocks/socketIoMock';
+import { SocketEvents } from '../../constants/socketEvents';
 import { RoomService } from '../../services/RoomService';
+import { RoomController } from '../../controllers/RoomController';
+
+jest.mock('../../config/socketIo', () => ({
+  getIO: () => mockIo
+}));
 
 const mockRoomService = {
   createRoom: jest.fn(),
@@ -68,7 +74,7 @@ describe('RoomController', () => {
   });
 
   describe('addMember', () => {
-    it('should add member successfully', async () => {
+    it('should add member and emit socket event successfully', async () => {
       const mockMember = { room_id: 1, user_id: 2, created_at: new Date() };
       mockRequest = {
         params: { roomId: '1' },
@@ -85,6 +91,12 @@ describe('RoomController', () => {
       expect(mockRoomService.addMember).toHaveBeenCalledWith(1, 2);
       expect(statusMock).toHaveBeenCalledWith(201);
       expect(jsonMock).toHaveBeenCalledWith(mockMember);
+      expect(mockIo.to).toHaveBeenCalledWith('1');
+      expect(mockIo.emit).toHaveBeenCalledWith(SocketEvents.ROOM.MEMBER_ADDED, {
+        roomId: 1,
+        userId: 2,
+        timestamp: expect.any(Date)
+      });
     });
   });
 

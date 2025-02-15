@@ -1,6 +1,12 @@
 import { Request, Response } from 'express';
-import { ChatController } from '../../controllers/ChatController';
+import { mockIo } from '../mocks/socketIoMock';
+import { SocketEvents } from '../../constants/socketEvents';
 import { ChatService } from '../../services/ChatService';
+import { ChatController } from '../../controllers/ChatController';
+
+jest.mock('../../config/socketIo', () => ({
+  getIO: () => mockIo
+}));
 
 const mockChatService = {
   sendMessage: jest.fn(),
@@ -34,7 +40,7 @@ describe('ChatController', () => {
   });
 
   describe('sendMessage', () => {
-    it('should send message successfully', async () => {
+    it('should send message and emit socket event successfully', async () => {
       const mockMessage = {
         id: 1,
         text: 'Hello World',
@@ -67,6 +73,8 @@ describe('ChatController', () => {
       });
       expect(statusMock).toHaveBeenCalledWith(201);
       expect(jsonMock).toHaveBeenCalledWith(mockMessage);
+      expect(mockIo.to).toHaveBeenCalledWith('1');
+      expect(mockIo.emit).toHaveBeenCalledWith(SocketEvents.MESSAGE.SENT, mockMessage);
     });
 
     it('should handle error response', async () => {
