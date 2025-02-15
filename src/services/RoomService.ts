@@ -30,30 +30,42 @@ export class RoomService {
     }
   }
 
-  async addMember(roomId: number, userId: number): Promise<ServiceResponse<RoomMember>> {
+  async addMember(roomId: number, userId: number): Promise<ServiceResponse<any>> {
     try {
-      const [room, user] = await Promise.all([
-        this.roomModel.findRoomById(roomId),
-        this.userModel.findUserById(userId)
-      ]);
-
+      const room = await this.roomModel.findRoomById(roomId);
       if (!room) {
-        return { status: 404, error: 'Room not found' };
+        return {
+          status: 404,
+          error: 'Room not found'
+        };
       }
 
+      const user = await this.userModel.findUserById(userId);
       if (!user) {
-        return { status: 404, error: 'User not found' };
+        return {
+          status: 404,
+          error: 'User not found'
+        };
       }
 
       const isMember = await this.roomModel.isUserMember(roomId, userId);
       if (isMember) {
-        return { status: 400, error: 'User is already a member of this room' };
+        return {
+          status: 400,
+          error: 'User is already a member of this room'
+        };
       }
 
       const member = await this.roomModel.addMember(roomId, userId);
-      return { status: 201, data: member };
+      return {
+        status: 201,
+        data: member
+      };
     } catch (error) {
-      return { status: 500, error: 'Failed to add member to room' };
+      return {
+        status: 500,
+        error: 'Failed to add member to room'
+      };
     }
   }
 
