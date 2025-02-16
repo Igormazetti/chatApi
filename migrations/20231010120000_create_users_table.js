@@ -1,5 +1,6 @@
-exports.up = function(knex) {
-  return knex.schema.createTable('users', function(table) {
+/* eslint-disable no-undef */
+exports.up = function (knex) {
+  return knex.schema.createTable('users', function (table) {
     table.increments('id').primary();
     table.string('username', 50).unique().notNullable();
     table.string('password', 100).notNullable();
@@ -7,6 +8,6 @@ exports.up = function(knex) {
   });
 };
 
-exports.down = function(knex) {
+exports.down = function (knex) {
   return knex.schema.dropTable('users');
-}; 
+};
