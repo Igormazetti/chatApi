@@ -14,14 +14,18 @@ export class UserService {
     this.encrypt = new Encrypt();
   }
 
-  async createUser(username: string, password: string): Promise<ServiceResponse<any>> {
+  async createUser(
+    username: string,
+    password: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): Promise<ServiceResponse<any>> {
     try {
       const existingUser = await this.userModel.findUserByUsername(username);
 
       if (existingUser) {
         return {
           status: 422,
-          error: 'Username já cadastrado!'
+          error: 'Username já cadastrado!',
         };
       }
 
@@ -32,17 +36,19 @@ export class UserService {
         status: 201,
         data: {
           id: userId,
-          username
-        }
+          username,
+        },
       };
     } catch (error) {
+      console.error(error);
       return {
         status: 500,
-        error: 'Failed to create user'
+        error: 'Failed to create user',
       };
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async findUserById(id: number): Promise<ServiceResponse<any>> {
     try {
       const user = await this.userModel.findUserById(id);
@@ -52,7 +58,8 @@ export class UserService {
         return { status: 404, error: 'User not found' };
       }
     } catch (error) {
+      console.error(error);
       return { status: 500, error: 'Failed to retrieve user' };
     }
   }
-} 
+}

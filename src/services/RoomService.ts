@@ -1,4 +1,4 @@
-import { RoomModel, Room, RoomMember } from '../models/RoomModel';
+import { RoomModel, Room } from '../models/RoomModel';
 import { UserModel } from '../models/UserModel';
 
 interface ServiceResponse<T> {
@@ -8,9 +8,15 @@ interface ServiceResponse<T> {
 }
 
 export class RoomService {
-  constructor(private roomModel: RoomModel, private userModel: UserModel) {}
+  constructor(
+    private roomModel: RoomModel,
+    private userModel: UserModel,
+  ) {}
 
-  async createRoom(name: string, creatorId: number): Promise<ServiceResponse<Room>> {
+  async createRoom(
+    name: string,
+    creatorId: number,
+  ): Promise<ServiceResponse<Room>> {
     try {
       const creator = await this.userModel.findUserById(creatorId);
       if (!creator) {
@@ -26,17 +32,22 @@ export class RoomService {
 
       return { status: 201, data: room };
     } catch (error) {
+      console.error(error);
       return { status: 500, error: 'Failed to create room' };
     }
   }
 
-  async addMember(roomId: number, userId: number): Promise<ServiceResponse<any>> {
+  async addMember(
+    roomId: number,
+    userId: number,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): Promise<ServiceResponse<any>> {
     try {
       const room = await this.roomModel.findRoomById(roomId);
       if (!room) {
         return {
           status: 404,
-          error: 'Room not found'
+          error: 'Room not found',
         };
       }
 
@@ -44,7 +55,7 @@ export class RoomService {
       if (!user) {
         return {
           status: 404,
-          error: 'User not found'
+          error: 'User not found',
         };
       }
 
@@ -52,24 +63,28 @@ export class RoomService {
       if (isMember) {
         return {
           status: 400,
-          error: 'User is already a member of this room'
+          error: 'User is already a member of this room',
         };
       }
 
       const member = await this.roomModel.addMember(roomId, userId);
       return {
         status: 201,
-        data: member
+        data: member,
       };
     } catch (error) {
+      console.error(error);
       return {
         status: 500,
-        error: 'Failed to add member to room'
+        error: 'Failed to add member to room',
       };
     }
   }
 
-  async removeMember(roomId: number, userId: number): Promise<ServiceResponse<null>> {
+  async removeMember(
+    roomId: number,
+    userId: number,
+  ): Promise<ServiceResponse<null>> {
     try {
       const room = await this.roomModel.findRoomById(roomId);
       if (!room) {
@@ -84,6 +99,7 @@ export class RoomService {
       const removed = await this.roomModel.removeMember(roomId, userId);
       return { status: removed ? 204 : 404 };
     } catch (error) {
+      console.error(error);
       return { status: 500, error: 'Failed to remove member from room' };
     }
   }
@@ -98,7 +114,8 @@ export class RoomService {
       const members = await this.roomModel.getRoomMembers(roomId);
       return { status: 200, data: members };
     } catch (error) {
+      console.error(error);
       return { status: 500, error: 'Failed to get room members' };
     }
   }
-} 
+}

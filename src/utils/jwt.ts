@@ -23,6 +23,7 @@ export default class Token {
       const { data } = decoded as ITokenPayload;
       return data;
     } catch (_err) {
+      console.error(_err);
       return undefined;
     }
   };
