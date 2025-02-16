@@ -5,5 +5,6 @@ export interface User {
   created_at: Date;
 }
 
-export type UserCreationResponse = Pick<User, 'id'>;
-export type UserWithoutPassword = Omit<User, 'password'>;
+export type UserCreationResponse = Omit<User, 'password'>;
+export type UserForTest = Pick<User, 'id' | 'username'> &
+  Partial<Omit<User, 'id' | 'username'>>;

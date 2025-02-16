@@ -3,6 +3,7 @@ import { MessageModel } from '../../models/MessageModel';
 import { UserModel } from '../../models/UserModel';
 import { RoomModel } from '../../models/RoomModel';
 import { Message } from '../../@types/Message';
+import { User, UserForTest } from '../../@types/User';
 
 const mockMessageModel = {
   createMessage: jest.fn(),
@@ -12,8 +13,22 @@ const mockMessageModel = {
   deleteMessage: jest.fn(),
 } as unknown as jest.Mocked<MessageModel>;
 
+const mockUser: UserForTest = {
+  id: 1,
+  username: 'sender',
+  password: 'hashedPassword',
+  created_at: new Date(),
+};
+
+const mockReceiver: UserForTest = {
+  id: 2,
+  username: 'receiver',
+  password: 'hashedPassword',
+  created_at: new Date(),
+};
+
 const mockUserModel = {
-  findUserById: jest.fn(),
+  findUserById: jest.fn<Promise<User | null>, [number]>(),
 } as unknown as jest.Mocked<UserModel>;
 
 const mockRoomModel = {
@@ -26,7 +41,11 @@ describe('ChatService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    chatService = new ChatService(mockMessageModel, mockUserModel, mockRoomModel);
+    chatService = new ChatService(
+      mockMessageModel,
+      mockUserModel,
+      mockRoomModel,
+    );
   });
 
   describe('sendMessage', () => {
@@ -48,12 +67,12 @@ describe('ChatService', () => {
       };
 
       mockUserModel.findUserById
-        .mockResolvedValueOnce({ id: 1, username: 'sender' })
-        .mockResolvedValueOnce({ id: 2, username: 'receiver' });
-      mockRoomModel.findRoomById.mockResolvedValue({ 
-        id: 1, 
+        .mockResolvedValueOnce(mockUser as User)
+        .mockResolvedValueOnce(mockReceiver as User);
+      mockRoomModel.findRoomById.mockResolvedValue({
+        id: 1,
         name: 'Test Room',
-        created_at: new Date()
+        created_at: new Date(),
       });
       mockRoomModel.isUserMember
         .mockResolvedValueOnce(true)
@@ -77,7 +96,7 @@ describe('ChatService', () => {
     });
 
     it('should return error if sender not found', async () => {
-      mockUserModel.findUserById.mockResolvedValue(undefined);
+      mockUserModel.findUserById.mockResolvedValue(null);
 
       const result = await chatService.sendMessage(mockSendMessageParams);
 
@@ -86,7 +105,7 @@ describe('ChatService', () => {
     });
 
     it('should return error if room not found', async () => {
-      mockUserModel.findUserById.mockResolvedValue({ id: 1, username: 'sender' });
+      mockUserModel.findUserById.mockResolvedValue(mockUser as User);
       mockRoomModel.findRoomById.mockResolvedValue(undefined);
 
       const result = await chatService.sendMessage(mockSendMessageParams);
@@ -96,11 +115,11 @@ describe('ChatService', () => {
     });
 
     it('should return error if sender is not room member', async () => {
-      mockUserModel.findUserById.mockResolvedValue({ id: 1, username: 'sender' });
-      mockRoomModel.findRoomById.mockResolvedValue({ 
-        id: 1, 
+      mockUserModel.findUserById.mockResolvedValue(mockUser as User);
+      mockRoomModel.findRoomById.mockResolvedValue({
+        id: 1,
         name: 'Test Room',
-        created_at: new Date()
+        created_at: new Date(),
       });
       mockRoomModel.isUserMember.mockResolvedValue(false);
 
@@ -114,26 +133,29 @@ describe('ChatService', () => {
   describe('getRoomMessages', () => {
     it('should get room messages successfully', async () => {
       const mockMessages: Message[] = [
-        { 
-          id: 1, 
-          text: 'Hello', 
+        {
+          id: 1,
+          text: 'Hello',
           room_id: 1,
           sender_id: 1,
-          created_at: new Date()
+          created_at: new Date(),
         },
-        { 
-          id: 2, 
-          text: 'World', 
+        {
+          id: 2,
+          text: 'World',
           room_id: 1,
           sender_id: 2,
-          created_at: new Date()
+          created_at: new Date(),
         },
       ];
 
       mockRoomModel.isUserMember.mockResolvedValue(true);
       mockMessageModel.getRoomMessages.mockResolvedValue(mockMessages);
 
-      const result = await chatService.getRoomMessages({ roomId: 1, userId: 1 });
+      const result = await chatService.getRoomMessages({
+        roomId: 1,
+        userId: 1,
+      });
 
       expect(result.status).toBe(200);
       expect(result.data).toEqual(mockMessages);
@@ -142,7 +164,10 @@ describe('ChatService', () => {
     it('should return error if user is not room member', async () => {
       mockRoomModel.isUserMember.mockResolvedValue(false);
 
-      const result = await chatService.getRoomMessages({ roomId: 1, userId: 1 });
+      const result = await chatService.getRoomMessages({
+        roomId: 1,
+        userId: 1,
+      });
 
       expect(result.status).toBe(403);
       expect(result.error).toBe('User is not a member of this room');
@@ -211,4 +236,4 @@ describe('ChatService', () => {
       expect(result.error).toBe('User not allowed to edit this message');
     });
   });
-}); 
+});

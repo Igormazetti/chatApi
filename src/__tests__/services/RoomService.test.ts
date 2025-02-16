@@ -1,6 +1,21 @@
 import { RoomService } from '../../services/RoomService';
 import { RoomModel } from '../../models/RoomModel';
 import { UserModel } from '../../models/UserModel';
+import { User } from '../../@types/User';
+
+const mockCompleteUser: User = {
+  id: 1,
+  username: 'testUser',
+  password: 'hashedPassword',
+  created_at: new Date(),
+};
+
+const mockCompleteUser2: User = {
+  id: 2,
+  username: 'testUser2',
+  password: 'hashedPassword',
+  created_at: new Date(),
+};
 
 const mockRoomModel = {
   createRoom: jest.fn(),
@@ -27,11 +42,10 @@ describe('RoomService', () => {
 
   describe('createRoom', () => {
     it('should create a room successfully', async () => {
-      const mockUser = { id: 1, username: 'testUser' };
       const mockRoom = { id: 1, name: 'Test Room', created_at: new Date() };
       const mockRoomMember = { room_id: 1, user_id: 1, created_at: new Date() };
 
-      mockUserModel.findUserById.mockResolvedValue(mockUser);
+      mockUserModel.findUserById.mockResolvedValue(mockCompleteUser);
       mockRoomModel.createRoom.mockResolvedValue(mockRoom);
       mockRoomModel.addMember.mockResolvedValue(mockRoomMember);
 
@@ -45,7 +59,7 @@ describe('RoomService', () => {
     });
 
     it('should return error if user not found', async () => {
-      mockUserModel.findUserById.mockResolvedValue(undefined);
+      mockUserModel.findUserById.mockResolvedValue(null);
 
       const result = await roomService.createRoom('Test Room', 1);
 
@@ -55,7 +69,12 @@ describe('RoomService', () => {
     });
 
     it('should return error if room name is empty', async () => {
-      const mockUser = { id: 1, username: 'testUser' };
+      const mockUser = {
+        id: 1,
+        username: 'testUser',
+        password: 'hashedpswd',
+        created_at: new Date(),
+      };
       mockUserModel.findUserById.mockResolvedValue(mockUser);
 
       const result = await roomService.createRoom('', 1);
@@ -69,11 +88,10 @@ describe('RoomService', () => {
   describe('addMember', () => {
     it('should add member successfully', async () => {
       const mockRoom = { id: 1, name: 'Test Room', created_at: new Date() };
-      const mockUser = { id: 2, username: 'testUser2' };
+      mockUserModel.findUserById.mockResolvedValue(mockCompleteUser2);
       const mockRoomMember = { room_id: 1, user_id: 2, created_at: new Date() };
 
       mockRoomModel.findRoomById.mockResolvedValue(mockRoom);
-      mockUserModel.findUserById.mockResolvedValue(mockUser);
       mockRoomModel.isUserMember.mockResolvedValue(false);
       mockRoomModel.addMember.mockResolvedValue(mockRoomMember);
 
@@ -89,7 +107,12 @@ describe('RoomService', () => {
 
     it('should return error if user is already a member', async () => {
       const mockRoom = { id: 1, name: 'Test Room', created_at: new Date() };
-      const mockUser = { id: 2, username: 'testUser2' };
+      const mockUser = {
+        id: 2,
+        username: 'testUser2',
+        password: 'hashedPassword',
+        created_at: new Date(),
+      };
 
       mockRoomModel.findRoomById.mockResolvedValue(mockRoom);
       mockUserModel.findUserById.mockResolvedValue(mockUser);
@@ -104,7 +127,7 @@ describe('RoomService', () => {
 
     it('should return error if room not found', async () => {
       mockRoomModel.findRoomById.mockResolvedValue(undefined);
-      
+
       const result = await roomService.addMember(1, 2);
 
       expect(result.status).toBe(404);
@@ -116,9 +139,9 @@ describe('RoomService', () => {
 
     it('should return error if user not found', async () => {
       const mockRoom = { id: 1, name: 'Test Room', created_at: new Date() };
-      
+
       mockRoomModel.findRoomById.mockResolvedValue(mockRoom);
-      mockUserModel.findUserById.mockResolvedValue(undefined);
+      mockUserModel.findUserById.mockResolvedValue(null);
 
       const result = await roomService.addMember(1, 2);
 
@@ -130,7 +153,12 @@ describe('RoomService', () => {
 
     it('should return error if adding member fails', async () => {
       const mockRoom = { id: 1, name: 'Test Room', created_at: new Date() };
-      const mockUser = { id: 2, username: 'testUser2' };
+      const mockUser = {
+        id: 2,
+        username: 'testUser2',
+        password: 'hashedPassword',
+        created_at: new Date(),
+      };
 
       mockRoomModel.findRoomById.mockResolvedValue(mockRoom);
       mockUserModel.findUserById.mockResolvedValue(mockUser);
@@ -143,4 +171,4 @@ describe('RoomService', () => {
       expect(result.error).toBe('Failed to add member to room');
     });
   });
-}); 
+});
